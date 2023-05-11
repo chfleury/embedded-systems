@@ -18,38 +18,63 @@ GPIO.setup(12, GPIO.IN)  # SENSOR_FECHAMENTO_CANCELA_SAIDA
 GPIO.setup(17, GPIO.OUT)  # MOTOR_CANCELA_SAIDA
 
 
-# def readParkingSpaces():
-#     while True:
-#         for i in range(8):
-#             GPIO.output(22, i & 1)
-#             GPIO.output(26, (i & 2) >> 1)
-#             GPIO.output(19, (i & 4) >> 2)
+def readParkingSpaces():
+    parkingSpacesMap = [False] * 8
+    isFloorFull = True
+    while True:
+        for i in range(8):
+            time.sleep(0.03)
 
-#             time.sleep(0.05)
+            GPIO.output(22, i & 1)
+            GPIO.output(26, (i & 2) >> 1)
+            GPIO.output(19, (i & 4) >> 2)
 
-#             print("-----")
-#             SENSOR_DE_VAGA = GPIO.input(18)
-#             print(SENSOR_DE_VAGA)
-#             print("-----")
+            time.sleep(0.03)
+
+            isParkingSpaceBusy = bool(GPIO.input(18))
+
+            isFloorFull = isFloorFull and isParkingSpaceBusy
+
+            parkingSpacesMap[i] = isParkingSpaceBusy
+
+        print(isFloorFull)
+
+        print("First Floor Parking Spaces: ", parkingSpacesMap)
 
 
-def handleParkingBarrier():
+def handleEntranceParkingBarrier():
     while True:
         time.sleep(0.05)
-        SENSOR_ABERTURA_CANCELA_ENTRADA = GPIO.input(23)
-        print("sensor_abertura", SENSOR_ABERTURA_CANCELA_ENTRADA)
-        if SENSOR_ABERTURA_CANCELA_ENTRADA:
+        SENSOR_ABERTURA_CANCELA_SAIDA = GPIO.input(25)
+
+        if SENSOR_ABERTURA_CANCELA_SAIDA:
             GPIO.output(10, 1)
+
             while True:
-                SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(24)
-                print("sensor_fechamento", SENSOR_FECHAMENTO_CANCELA_ENTRADA)
+                SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(12)
                 if SENSOR_FECHAMENTO_CANCELA_ENTRADA:
                     GPIO.output(10, 0)
                     break
 
 
-# threading.Thread(target=readParkingSpaces).start()
-threading.Thread(target=handleParkingBarrier).start()
+def handleExitParkingBarrier():
+    while True:
+        SENSOR_ABERTURA_CANCELA_SAIDA = GPIO.input(25)
+
+        if SENSOR_ABERTURA_CANCELA_SAIDA:
+            GPIO.output(17, 1)
+
+            while True:
+                SENSOR_FECHAMENTO_CANCELA_SAIDA = GPIO.input(24)
+                if SENSOR_FECHAMENTO_CANCELA_SAIDA:
+                    GPIO.output(17, 0)
+                    break
+        time.sleep(0.05)
+
+
+threading.Thread(target=readParkingSpaces).start()
+threading.Thread(target=handleEntranceParkingBarrier).start()
+threading.Thread(target=handleExitParkingBarrier).start()
 
 # GPIO.setmode(GPIO.BCM)
 # GPIO.setup(17, GPIO.IN)
