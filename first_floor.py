@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import threading
-
+import socket
 
 GPIO.setmode(GPIO.BCM)
 
@@ -20,7 +20,6 @@ GPIO.setup(17, GPIO.OUT)  # MOTOR_CANCELA_SAIDA
 
 def readParkingSpaces():
     parkingSpacesMap = [False] * 8
-    isFloorFull = True
     while True:
         for i in range(8):
             time.sleep(0.03)
@@ -33,11 +32,7 @@ def readParkingSpaces():
 
             isParkingSpaceBusy = bool(GPIO.input(18))
 
-            isFloorFull = isFloorFull and isParkingSpaceBusy
-
             parkingSpacesMap[i] = isParkingSpaceBusy
-
-        print(isFloorFull)
 
         print("First Floor Parking Spaces: ", parkingSpacesMap)
 
@@ -75,6 +70,8 @@ def handleExitParkingBarrier():
 threading.Thread(target=readParkingSpaces).start()
 threading.Thread(target=handleEntranceParkingBarrier).start()
 threading.Thread(target=handleExitParkingBarrier).start()
+# threading.Thread(target=handleSocketCommunication).start() TODO
+
 
 # GPIO.setmode(GPIO.BCM)
 # GPIO.setup(17, GPIO.IN)
