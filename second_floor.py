@@ -7,12 +7,14 @@ import json
 HOST = "localhost"
 PORT = 10584
 
+
+socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
+
 parkingSpacesMap = {
     "parkingSpacesMap": [False] * 8,
     "metadata": "secondFloor"
 }
 
-socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -43,34 +45,76 @@ def readParkingSpaces() -> None:
  
          
  
+# def handleSecondFloorEntrance() -> None:
+#     sensorOneTime = False
+#     sensorTwoTime = False
+
+#     while True:
+#         SENSOR_DE_PASSAGEM_1 = GPIO.input(16)
+#         SENSOR_DE_PASSAGEM_2 = GPIO.input(21)
+
+
+#         if SENSOR_DE_PASSAGEM_1:
+
+#             if sensorTwoTime :
+#                 print('saiu para o primeiro andar')
+#                 time.sleep(0.5)
+#                 sensorOneTime = False
+#                 sensorTwoTime = False
+#             else: 
+#                 time.sleep(0.5) # TODO
+#                 sensorOneTime = True
+
+
+#         elif SENSOR_DE_PASSAGEM_2:
+#             if sensorOneTime:
+#                 print('entrou para o segundo andar')
+#                 time.sleep(0.5)
+#                 sensorOneTime = False
+#                 sensorTwoTime = False
+#             else:   
+#                 time.sleep(0.5)
+#                 sensorTwoTime = True
+
 def handleSecondFloorEntrance() -> None:
-    sensorOneTime = False
-    sensorTwoTime = False
+    sensorOneTime = None
+    sensorTwoTime = None
 
     while True:
-        SENSOR_DE_PASSAGEM_1 = GPIO.input(16)
-        SENSOR_DE_PASSAGEM_2 = GPIO.input(21)
+        SENSOR_DE_PASSAGEM_1 = bool(GPIO.input(16))
+        SENSOR_DE_PASSAGEM_2 = bool(GPIO.input(21))
+        if sensorOneTime is not None and sensorTwoTime is not None:
+
+            print(sensorOneTime, sensorTwoTime)
+
+        if SENSOR_DE_PASSAGEM_1 and sensorOneTime is None:
+            sensorOneTime = time.time()
+            while bool(GPIO.input(16)):
+                pass
+            # time.sleep(0.3)
+
+        if SENSOR_DE_PASSAGEM_2 and sensorTwoTime is None:
+            sensorTwoTime = time.time()
+            while bool(GPIO.input(21)):
+                pass
+
+        if sensorOneTime is not None and sensorTwoTime is not None:
+            deltaTime = sensorTwoTime - sensorOneTime
+
+            if deltaTime > 0:
+                 print('entrou para o segundo andar!')
+                 print(time.time())
+            else: 
+                print('saiu para o primeiro andar2!')
+                print(time.time())
+            sensorOneTime = None
+            sensorTwoTime = None
+            time.sleep(0.4)
+
+            continue
+        time.sleep(0.25)
 
 
-        if SENSOR_DE_PASSAGEM_1:
-            sensorOneTime = True
-
-            if sensorTwoTime :
-                print('saiu para o primeiro andar')
-                sensorOneTime = False
-                sensorTwoTime = False
-                time.sleep(0.3)
-            else: time.sleep(0.3) # TODO
-
-        if SENSOR_DE_PASSAGEM_2:
-            sensorTwoTime = True
-
-            if sensorOneTime:
-                print('entrou para o segundo andar')
-                sensorOneTime = False
-                sensorTwoTime = False
-                time.sleep(0.3)
-            else: time.sleep(0.3)
 
 def handleSocketCommunication() -> None:
     while True:
@@ -92,7 +136,7 @@ def handleSocketCommunication() -> None:
             pass
 
 def main():
-    threading.Thread(target=handleSocketCommunication).start()
-    threading.Thread(target=readParkingSpaces).start()
+    # threading.Thread(target=handleSocketCommunication).start()
+    # threading.Thread(target=readParkingSpaces).start()
     threading.Thread(target=handleSecondFloorEntrance).start()
 main()

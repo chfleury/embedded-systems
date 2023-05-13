@@ -48,9 +48,22 @@ def userInterface():
     while True:
         print("Primeiro Andar:", parkingSpacesMap['firstFloorMap'])
         print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
+        print("Comandos disponíveis ('1', '2'):")
+        print("'1' - Liga sinal de lotado do estacionamento.")
+        print("'2' - Liga sinal de lotado do segundo andar.")
         time.sleep(0.3)  # TODO
         os.system("clear")
         pass
+
+def userInput():
+    while True:
+        input = int(input)
+
+        if input == 1:
+            print("Liga sinal de lotado do estacionamento.")
+        elif input == 2:
+            print("'1' - Liga sinal de lotado do estacionamento.")
+
 
 threading.Thread(target=handleSocketCommunication).start()
 threading.Thread(target=userInterface).start()

@@ -2,6 +2,17 @@ import RPi.GPIO as GPIO
 import time
 import threading
 import socket
+import json
+
+HOST = "localhost"
+PORT = 10584
+
+socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
+
+parkingSpacesMap = {
+    "parkingSpacesMap": [False] * 8,
+    "metadata": "firstFloor"
+}
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -19,7 +30,6 @@ GPIO.setup(17, GPIO.OUT)  # MOTOR_CANCELA_SAIDA
 
 
 def readParkingSpaces():
-    parkingSpacesMap = [False] * 8
     while True:
         for i in range(8):
             GPIO.output(22, i & 1)
@@ -30,9 +40,9 @@ def readParkingSpaces():
 
             isParkingSpaceBusy = bool(GPIO.input(18))
 
-            parkingSpacesMap[i] = isParkingSpaceBusy
+            parkingSpacesMap['parkingSpacesMap'][i] = isParkingSpaceBusy
 
-        print("First Floor Parking Spaces: ", parkingSpacesMap)
+        print("First Floor Parking Spaces: ", parkingSpacesMap['parkingSpacesMap'])
 
 
 def handleEntranceParkingBarrier():
@@ -65,7 +75,26 @@ def handleExitParkingBarrier():
         time.sleep(0.05) # TODO
 
 
+def handleSocketCommunication() -> None:
+    while True:
+        try:
+            socketInstance.connect((HOST, PORT))
+            while True:
+                try:
+                    time.sleep(1) # TODO
+                    socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
+
+                    data = socketInstance.recv(512)
+                    # print("data", json.loads(data.decode()))
+
+                except:
+                    # print('break')
+                    break
+        except:
+            pass
+
 threading.Thread(target=readParkingSpaces).start()
 threading.Thread(target=handleEntranceParkingBarrier).start()
 threading.Thread(target=handleExitParkingBarrier).start()
+threading.Thread(target=handleSocketCommunication).start()
 
