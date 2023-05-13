@@ -7,6 +7,7 @@ import time
 HOST = "localhost"
 PORT = 10582
 
+
 firstFloorMap = [False] * 8
 secondFloorMap = [False] * 8
 
@@ -41,10 +42,11 @@ def handleSocketCommunication():
 
 
 def userInterface():
-    print("Primeiro Andar:", firstFloorMap)
-    print("Segundo Andar:", secondFloorMap)
-    time.sleep(0.3)  # TODO
-    os.system("clear")
+    while True:
+        print("Primeiro Andar:", firstFloorMap)
+        print("Segundo Andar:", secondFloorMap)
+        time.sleep(0.3)  # TODO
+        os.system("clear")
 
 
 def sendMessage(data) -> None:
