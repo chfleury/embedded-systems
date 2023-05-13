@@ -5,11 +5,13 @@ import os
 import time
 
 HOST = "localhost"
-PORT = 10582
+PORT = 10583
 
 
-firstFloorMap = [False] * 8
-secondFloorMap = [False] * 8
+parkingSpacesMap = {
+    "firstFloorMap": [False] * 8,
+    "secondFloorMap": [False] * 8
+}
 
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 socketInstance.bind((HOST, PORT))
@@ -19,34 +21,42 @@ socketInstance.listen()
 def handleSocketCommunication():
     while True:
         print("Waiting for client...")
+
         connection, address = socketInstance.accept()
 
         while True:
             try:
+                print('entrou')
+                print('entrou2')
+
                 data = connection.recv(64).decode()
+                print('entrou3')
 
                 dataDictionary = json.loads(data)
 
-                if dataDictionary["metadata"] == "secondFloor":
-                    secondFloorMap = dataDictionary["parkingSpacesMap"]
-                elif dataDictionary["metadata"] == "firstFloor":
-                    firstFloorMap = dataDictionary["parkingSpacesMap"]
+                print('datad', dataDictionary)
+                if  dataDictionary["metadata"] == "firstFloor":
+                    parkingSpacesMap['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
+                elif dataDictionary["metadata"] == "secondFloor":
+                    parkingSpacesMap['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
 
                 print("data", json.loads(data))
                 x = json.loads(data.decode())
-                print(x["test"])
+                print(x["seco"])
 
-                connection.sendall(data)
+                connection.sendall(str.encode(json.dumps(dataDictionary)))
             except:
+                print('explodiu')
                 break
 
 
 def userInterface():
     while True:
-        print("Primeiro Andar:", firstFloorMap)
-        print("Segundo Andar:", secondFloorMap)
-        time.sleep(0.3)  # TODO
-        os.system("clear")
+        # print("Primeiro Andar:", parkingSpacesMap['firstFloorMap'])
+        # print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
+        # time.sleep(0.3)  # TODO
+        # os.system("clear")
+        pass
 
 
 def sendMessage(data) -> None:

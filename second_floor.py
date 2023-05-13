@@ -5,7 +5,12 @@ import socket
 import json
 
 HOST = "localhost"
-PORT = 10582
+PORT = 10583
+
+parkingSpacesMap = {
+    "parkingSpacesMap": [False] * 8,
+    "metadata": "secondFloor"
+}
 
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
@@ -19,36 +24,24 @@ GPIO.setup(16, GPIO.IN)  # SENSOR_DE_PASSAGEM_1
 GPIO.setup(21, GPIO.IN)  # SENSOR_DE_PASSAGEM_2
 
 
-def sendMessage(data) -> None:
-    data['metadata'] = 'secondFloor'
-    try:
-        socketInstance.send(str.encode(json.dumps(data))) # TODO
-    except:
-        pass
-
-
 def readParkingSpaces() -> None:
-    parkingSpacesMap = [False] * 8
-    while True:
+     while True:
         for i in range(8):
             time.sleep(0.03) # TODO VERIFY NEED OF THIS SLEEP
 
             GPIO.output(13, i & 1)
-            GPIO.output(06, (i & 2) >> 1)
-            GPIO.output(05, (i & 4) >> 2)
+            GPIO.output(6, (i & 2) >> 1)
+            GPIO.output(5, (i & 4) >> 2)
 
             time.sleep(0.03)
 
-            isParkingSpaceBusy = bool(GPIO.input(12))
+            isParkingSpaceBusy = bool(GPIO.input(20))
 
-            parkingSpacesMap[i] = isParkingSpaceBusy
-
-        print("Second Floor Parking Spaces: ", parkingSpacesMap)
-       
-        sendMessage({
-            "parkingSpacesMap": parkingSpacesMap
-        })
-
+            x = bool(int(time.time()) & 1)
+            parkingSpacesMap['parkingSpacesMap'][i] = x
+ 
+         
+ 
 def handleSecondFloorEntrance() -> None:
     sensorOneTime = False
     sensorTwoTime = False
@@ -79,12 +72,18 @@ def handleSecondFloorEntrance() -> None:
 def handleSocketCommunication() -> None:
     while True:
         socketInstance.connect((HOST, PORT))
-
+        print('tentou conect')
         while True:
             try:
+
+                print('recebeu algo')
                 data = socketInstance.recv(64)
                 print("data", json.loads(data.decode()))
+
+                socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
+
             except:
+                print('break')
                 break
 
 

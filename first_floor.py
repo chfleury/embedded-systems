@@ -22,13 +22,11 @@ def readParkingSpaces():
     parkingSpacesMap = [False] * 8
     while True:
         for i in range(8):
-            time.sleep(0.03)
-
             GPIO.output(22, i & 1)
             GPIO.output(26, (i & 2) >> 1)
             GPIO.output(19, (i & 4) >> 2)
 
-            time.sleep(0.03)
+            time.sleep(0.05)
 
             isParkingSpaceBusy = bool(GPIO.input(18))
 
@@ -39,14 +37,14 @@ def readParkingSpaces():
 
 def handleEntranceParkingBarrier():
     while True:
-        time.sleep(0.05)
-        SENSOR_ABERTURA_CANCELA_SAIDA = GPIO.input(25)
+        time.sleep(0.05) # TODO
+        SENSOR_ABERTURA_CANCELA_ENTRADA = GPIO.input(23)
 
-        if SENSOR_ABERTURA_CANCELA_SAIDA:
+        if SENSOR_ABERTURA_CANCELA_ENTRADA:
             GPIO.output(10, 1)
 
             while True:
-                SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(12)
+                SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(24)
                 if SENSOR_FECHAMENTO_CANCELA_ENTRADA:
                     GPIO.output(10, 0)
                     break
@@ -60,21 +58,14 @@ def handleExitParkingBarrier():
             GPIO.output(17, 1)
 
             while True:
-                SENSOR_FECHAMENTO_CANCELA_SAIDA = GPIO.input(24)
+                SENSOR_FECHAMENTO_CANCELA_SAIDA = GPIO.input(12)
                 if SENSOR_FECHAMENTO_CANCELA_SAIDA:
                     GPIO.output(17, 0)
                     break
-        time.sleep(0.05)
+        time.sleep(0.05) # TODO
 
 
 threading.Thread(target=readParkingSpaces).start()
 threading.Thread(target=handleEntranceParkingBarrier).start()
 threading.Thread(target=handleExitParkingBarrier).start()
-# threading.Thread(target=handleSocketCommunication).start() TODO
 
-
-# GPIO.setmode(GPIO.BCM)
-# GPIO.setup(17, GPIO.IN)
-# GPIO.setup(18, GPIO.OUT)
-# input_value = GPIO.input(17)
-# GPIO.output(18, GPIO.HIGH)
