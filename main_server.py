@@ -46,10 +46,10 @@ def handleSocketCommunication():
 
 def userInterface():
     while True:
-        # print("Primeiro Andar:", parkingSpacesMap['firstFloorMap'])
-        # print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
-        # time.sleep(0.3)  # TODO
-        # os.system("clear")
+        print("Primeiro Andar:", parkingSpacesMap['firstFloorMap'])
+        print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
+        time.sleep(0.3)  # TODO
+        os.system("clear")
         pass
 
 threading.Thread(target=handleSocketCommunication).start()
