@@ -5,7 +5,7 @@ import os
 import time
 
 HOST = "localhost"
-PORT = 10583
+PORT = 10584
 
 
 parkingSpacesMap = {
@@ -26,27 +26,21 @@ def handleSocketCommunication():
 
         while True:
             try:
-                print('entrou')
-                print('entrou2')
+                time.sleep(1) # TODO
 
-                data = connection.recv(64).decode()
-                print('entrou3')
+                data = connection.recv(512).decode()
 
                 dataDictionary = json.loads(data)
 
-                print('datad', dataDictionary)
                 if  dataDictionary["metadata"] == "firstFloor":
                     parkingSpacesMap['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
                 elif dataDictionary["metadata"] == "secondFloor":
                     parkingSpacesMap['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
 
-                print("data", json.loads(data))
-                x = json.loads(data.decode())
-                print(x["seco"])
-
                 connection.sendall(str.encode(json.dumps(dataDictionary)))
-            except:
-                print('explodiu')
+            except Exception as e: 
+                print(e)
+
                 break
 
 
@@ -57,14 +51,6 @@ def userInterface():
         # time.sleep(0.3)  # TODO
         # os.system("clear")
         pass
-
-
-def sendMessage(data) -> None:
-    try:
-        socketInstance.send(str.encode(json.dumps(data)))  # TODO
-    except:
-        pass
-
 
 threading.Thread(target=handleSocketCommunication).start()
 threading.Thread(target=userInterface).start()

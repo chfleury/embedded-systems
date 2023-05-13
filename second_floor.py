@@ -5,7 +5,7 @@ import socket
 import json
 
 HOST = "localhost"
-PORT = 10583
+PORT = 10584
 
 parkingSpacesMap = {
     "parkingSpacesMap": [False] * 8,
@@ -37,7 +37,7 @@ def readParkingSpaces() -> None:
 
             isParkingSpaceBusy = bool(GPIO.input(20))
 
-            x = bool(int(time.time()) & 1)
+            x = bool(int(time.time()) & 1) # TODO
             parkingSpacesMap['parkingSpacesMap'][i] = x
  
          
@@ -71,21 +71,22 @@ def handleSecondFloorEntrance() -> None:
 
 def handleSocketCommunication() -> None:
     while True:
-        socketInstance.connect((HOST, PORT))
-        print('tentou conect')
-        while True:
-            try:
+        try:
+            socketInstance.connect((HOST, PORT))
+            print('tentou conect')
+            while True:
+                try:
+                    time.sleep(1) # TODO
+                    socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
 
-                print('recebeu algo')
-                data = socketInstance.recv(64)
-                print("data", json.loads(data.decode()))
+                    data = socketInstance.recv(512)
+                    print("data", json.loads(data.decode()))
 
-                socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
-
-            except:
-                print('break')
-                break
-
+                except:
+                    print('break')
+                    break
+        except:
+            pass
 
 def main():
     threading.Thread(target=handleSocketCommunication).start()
