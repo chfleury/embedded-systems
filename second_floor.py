@@ -5,7 +5,7 @@ import socket
 import json
 
 HOST = "localhost"
-PORT = 10584
+PORT = 10582
 
 
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
@@ -27,7 +27,7 @@ GPIO.setup(16, GPIO.IN)  # SENSOR_DE_PASSAGEM_1
 GPIO.setup(21, GPIO.IN)  # SENSOR_DE_PASSAGEM_2
 
 
-def readParkingSpaces() -> None:
+def readParkingSpaces():
      while True:
         for i in range(8):
             time.sleep(0.03) # TODO VERIFY NEED OF THIS SLEEP
@@ -76,7 +76,7 @@ def readParkingSpaces() -> None:
 #                 time.sleep(0.5)
 #                 sensorTwoTime = True
 
-def handleSecondFloorEntrance() -> None:
+def handleSecondFloorEntrance():
     sensorOneTime = None
     sensorTwoTime = None
 
@@ -116,18 +116,22 @@ def handleSecondFloorEntrance() -> None:
 
 
 
-def handleSocketCommunication() -> None:
+def handleSocketCommunication():
     while True:
         try:
             socketInstance.connect((HOST, PORT))
             # print('tentou conect')
             while True:
                 try:
-                    time.sleep(1) # TODO
+                    time.sleep(0.1) # TODO
                     socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
 
-                    data = socketInstance.recv(512)
-                    # print("data", json.loads(data.decode()))
+                    data = socketInstance.recv(512).decode()
+
+                    userManualCommands = json.loads(data)
+
+                    if userManualCommands['command'] == 'second_floor_full':
+                        setFullFloorLedOn()
 
                 except:
                     # print('break')
@@ -135,8 +139,11 @@ def handleSocketCommunication() -> None:
         except:
             pass
 
+def setFullFloorLedOn():
+    GPIO.output(8, 1)
+
 def main():
-    # threading.Thread(target=handleSocketCommunication).start()
-    # threading.Thread(target=readParkingSpaces).start()
+    threading.Thread(target=handleSocketCommunication).start()
+    threading.Thread(target=readParkingSpaces).start()
     threading.Thread(target=handleSecondFloorEntrance).start()
 main()

@@ -5,7 +5,7 @@ import socket
 import json
 
 HOST = "localhost"
-PORT = 10584
+PORT = 10582
 
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
@@ -75,23 +75,33 @@ def handleExitParkingBarrier():
         time.sleep(0.05) # TODO
 
 
-def handleSocketCommunication() -> None:
+def handleSocketCommunication():
     while True:
         try:
             socketInstance.connect((HOST, PORT))
             while True:
                 try:
-                    time.sleep(1) # TODO
+                    time.sleep(0.1) # TODO
                     socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
 
-                    data = socketInstance.recv(512)
-                    # print("data", json.loads(data.decode()))
+                    data = socketInstance.recv(512).decode()
+                    print('data', data)
+                    userManualCommands = json.loads(data)
+
+                    print('usermanualcommands', userManualCommands)
+
+                    if userManualCommands['command'] == 'first_floor_full':
+                        setFullFloorLedOn()
 
                 except:
                     # print('break')
                     break
         except:
             pass
+
+def setFullFloorLedOn():
+    print('entrou aqui pra setar')
+    GPIO.output(27, 1)
 
 threading.Thread(target=readParkingSpaces).start()
 threading.Thread(target=handleEntranceParkingBarrier).start()

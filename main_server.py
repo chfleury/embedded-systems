@@ -5,7 +5,7 @@ import os
 import time
 
 HOST = "localhost"
-PORT = 10584
+PORT = 10582
 
 
 parkingSpacesMap = {
@@ -13,9 +13,14 @@ parkingSpacesMap = {
     "secondFloorMap": [False] * 8
 }
 
+userManualCommands = {
+    "command": None
+}
+
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 socketInstance.bind((HOST, PORT))
 socketInstance.listen()
+
 
 
 def handleSocketCommunication():
@@ -32,38 +37,50 @@ def handleSocketCommunication():
 
                 dataDictionary = json.loads(data)
 
+                print(dataDictionary)
                 if  dataDictionary["metadata"] == "firstFloor":
                     parkingSpacesMap['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
                 elif dataDictionary["metadata"] == "secondFloor":
                     parkingSpacesMap['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
 
-                connection.sendall(str.encode(json.dumps(dataDictionary)))
+                if userManualCommands["command"] is not None:
+                    print('chegou aqui')
+                    connection.sendall(str.encode(json.dumps(userManualCommands)))
+                    print('foi de base')
+                    userManualCommands["command"] = None
+
             except Exception as e: 
                 print(e)
-
                 break
+
+
+
+def userInput():
+    while True:
+        x = int(input())
+
+        if x == 1:
+            print('entrou aqui')
+            userManualCommands['command'] = 'first_floor_full'
+        elif x == 2:
+            userManualCommands['command'] = 'secons_floor_full'
 
 
 def userInterface():
     while True:
+        print("Total de carros")
         print("Primeiro Andar:", parkingSpacesMap['firstFloorMap'])
         print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
-        print("Comandos disponíveis ('1', '2'):")
+        print("Comandos disponiveis ('1' ou '2')")
         print("'1' - Liga sinal de lotado do estacionamento.")
         print("'2' - Liga sinal de lotado do segundo andar.")
-        time.sleep(0.3)  # TODO
+        time.sleep(1)  # TODO
         os.system("clear")
         pass
 
-def userInput():
-    while True:
-        input = int(input)
 
-        if input == 1:
-            print("Liga sinal de lotado do estacionamento.")
-        elif input == 2:
-            print("'1' - Liga sinal de lotado do estacionamento.")
 
 
 threading.Thread(target=handleSocketCommunication).start()
-threading.Thread(target=userInterface).start()
+# threading.Thread(target=userInterface).start()
+threading.Thread(target=userInput).start()
