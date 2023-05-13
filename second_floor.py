@@ -15,6 +15,7 @@ parkingSpacesMap = {
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
 GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
 GPIO.setup(13, GPIO.OUT)  # ENDERECO_01
 GPIO.setup(6, GPIO.OUT)  # ENDERECO_02
 GPIO.setup(5, GPIO.OUT)  # ENDERECO_03
@@ -38,7 +39,7 @@ def readParkingSpaces() -> None:
             isParkingSpaceBusy = bool(GPIO.input(20))
 
             x = bool(int(time.time()) & 1) # TODO
-            parkingSpacesMap['parkingSpacesMap'][i] = x
+            parkingSpacesMap['parkingSpacesMap'][i] = isParkingSpaceBusy
  
          
  
@@ -58,7 +59,8 @@ def handleSecondFloorEntrance() -> None:
                 print('saiu para o primeiro andar')
                 sensorOneTime = False
                 sensorTwoTime = False
-            else: time.sleep(0.1)
+                time.sleep(0.3)
+            else: time.sleep(0.3) # TODO
 
         if SENSOR_DE_PASSAGEM_2:
             sensorTwoTime = True
@@ -67,23 +69,24 @@ def handleSecondFloorEntrance() -> None:
                 print('entrou para o segundo andar')
                 sensorOneTime = False
                 sensorTwoTime = False
-            else: time.sleep(0.1)
+                time.sleep(0.3)
+            else: time.sleep(0.3)
 
 def handleSocketCommunication() -> None:
     while True:
         try:
             socketInstance.connect((HOST, PORT))
-            print('tentou conect')
+            # print('tentou conect')
             while True:
                 try:
                     time.sleep(1) # TODO
                     socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
 
                     data = socketInstance.recv(512)
-                    print("data", json.loads(data.decode()))
+                    # print("data", json.loads(data.decode()))
 
                 except:
-                    print('break')
+                    # print('break')
                     break
         except:
             pass
@@ -91,5 +94,5 @@ def handleSocketCommunication() -> None:
 def main():
     threading.Thread(target=handleSocketCommunication).start()
     threading.Thread(target=readParkingSpaces).start()
-
+    threading.Thread(target=handleSecondFloorEntrance).start()
 main()

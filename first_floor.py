@@ -4,7 +4,7 @@ import threading
 import socket
 
 GPIO.setmode(GPIO.BCM)
-
+GPIO.setwarnings(False)
 GPIO.setup(22, GPIO.OUT)  # ENDERECO_01
 GPIO.setup(26, GPIO.OUT)  # ENDERECO_02
 GPIO.setup(19, GPIO.OUT)  # ENDERECO_03
