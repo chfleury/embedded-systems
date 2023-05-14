@@ -73,6 +73,8 @@ def handleExitParkingBarrier():
         if SENSOR_ABERTURA_CANCELA_SAIDA:
             GPIO.output(17, 1)
 
+            while bool(GPIO.input(25)):
+                    pass
             while True:
                 SENSOR_FECHAMENTO_CANCELA_SAIDA = GPIO.input(12)
                 if SENSOR_FECHAMENTO_CANCELA_SAIDA:
