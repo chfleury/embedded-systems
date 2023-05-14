@@ -14,7 +14,7 @@ def handleSocketCommunication():
     sckt.sendall(str.encode(json.dumps(sendData)))
 
     while True:
-        data = sckt.recv(512)
+        data = sckt.recv(1024)
         print("data", data.decode())
 
 
