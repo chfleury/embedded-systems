@@ -50,46 +50,52 @@ def handleSecondFloorEntrance():
     sensorTwoTime = None
 
     while True:
-        SENSOR_DE_PASSAGEM_1 = bool(GPIO.input(16))
-        SENSOR_DE_PASSAGEM_2 = bool(GPIO.input(21))
-        if sensorOneTime is not None and sensorTwoTime is not None:
+        try:
+            SENSOR_DE_PASSAGEM_1 = bool(GPIO.input(16))
+            SENSOR_DE_PASSAGEM_2 = bool(GPIO.input(21))
+            if sensorOneTime is not None and sensorTwoTime is not None:
 
-            print(sensorOneTime, sensorTwoTime)
+                print(sensorOneTime, sensorTwoTime)
 
-        if SENSOR_DE_PASSAGEM_1 and sensorOneTime is None:
-            sensorOneTime = time.time()
-            while bool(GPIO.input(16)):
-                pass
-            # time.sleep(0.3)
+            if SENSOR_DE_PASSAGEM_1 and sensorOneTime is None:
+                sensorOneTime = time.time()
+                while bool(GPIO.input(16)):
+                    pass
+                # time.sleep(0.3)
 
-        if SENSOR_DE_PASSAGEM_2 and sensorTwoTime is None:
-            sensorTwoTime = time.time()
-            while bool(GPIO.input(21)):
-                pass
+            if SENSOR_DE_PASSAGEM_2 and sensorTwoTime is None:
+                sensorTwoTime = time.time()
+                while bool(GPIO.input(21)):
+                    pass
 
-        if sensorOneTime is not None and sensorTwoTime is not None:
-            deltaTime = sensorTwoTime - sensorOneTime
+            if sensorOneTime is not None and sensorTwoTime is not None:
+                deltaTime = sensorTwoTime - sensorOneTime
 
-            if deltaTime > 0:
-                secondFloorData['carCount'] = secondFloorData['carCount'] + 1
-                if secondFloorData['isFloorFull'] == GPIO.LOW and secondFloorData['carCount'] == 8:
-                    flipFullFloorState()
+                if deltaTime > 0:
+                    print('entrou para o segundo andar!1')
 
-                print('entrou para o segundo andar!')
-                print(time.time())
-            else: 
-                secondFloorData['carCount'] = secondFloorData['carCount'] - 1
-                if secondFloorData['isFloorFull'] == GPIO.HIGH:
-                    flipFullFloorState()
-                print('saiu para o primeiro andar2!')
-                print(time.time())
-            sensorOneTime = None
-            sensorTwoTime = None
-            time.sleep(0.4)
+                    secondFloorData['carCount'] = secondFloorData['carCount'] + 1
+                    if secondFloorData['isFloorFull'] == GPIO.LOW and secondFloorData['carCount'] == 8:
+                        flipFullFloorState()
 
-            continue
-        time.sleep(0.25)
+                    print('entrou para o segundo andar!')
+                    print(time.time())
+                else: 
+                    print('saiu para o primeiro andar!')
 
+                    secondFloorData['carCount'] = secondFloorData['carCount'] - 1
+                    if secondFloorData['isFloorFull'] == GPIO.HIGH:
+                        flipFullFloorState()
+                    print('saiu para o primeiro andar2!')
+                    print(time.time())
+                sensorOneTime = None
+                sensorTwoTime = None
+                time.sleep(0.4)
+
+                continue
+            time.sleep(0.25)
+        except Exception as e:
+            print('handleSecondFloorEntrance exception', e)
 
 
 def handleSocketCommunication():
