@@ -28,17 +28,17 @@ socketInstance.listen()
 
 def handleSocketCommunication():
     while True:
-        print("Waiting for client...")
+        # print("Waiting for client...")
 
 
         clients = [] # TODO FIX TCP
         
         while len(clients) < 2:
-            print('len', len(clients))
+            # print('len', len(clients))
             connection, _ = socketInstance.accept()
             clients.append(connection)
 
-        print('passou aqui')
+        # print('passou aqui')
         while True:
             try:
                 for client in clients:
@@ -64,7 +64,7 @@ def handleSocketCommunication():
                         parkingSpaceData['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
                         parkingSpaceData['secondFloorCarCount'] = dataDictionary['carCount']
 
-                    print('parkinAqui', parkingSpaceData)
+                    # print('parkinAqui', parkingSpaceData)
 
                     if userManualCommands["command"] is not None:
                         client.send(str.encode(json.dumps(userManualCommands)))
