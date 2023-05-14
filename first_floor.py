@@ -45,18 +45,13 @@ def readParkingSpaces():
 
             firstFloorData['parkingSpacesMap'][i] = isParkingSpaceBusy
 
-        # print("First Floor Parking Spaces: ", parkingSpacesMap['parkingSpacesMap'])
-
-
 def handleEntranceParkingBarrier():
     while True:
-        time.sleep(0.05) # TODO
+        time.sleep(0.05)
         SENSOR_ABERTURA_CANCELA_ENTRADA = GPIO.input(23)
 
         if SENSOR_ABERTURA_CANCELA_ENTRADA:
             GPIO.output(10, 1)
-
-
 
             while True:
                 SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(24)
@@ -71,6 +66,8 @@ def handleEntranceParkingBarrier():
 
 def handleExitParkingBarrier():
     while True:
+        time.sleep(0.05)
+
         SENSOR_ABERTURA_CANCELA_SAIDA = GPIO.input(25)
 
         if SENSOR_ABERTURA_CANCELA_SAIDA:
@@ -86,7 +83,6 @@ def handleExitParkingBarrier():
                     if firstFloorData['isFloorFull'] == GPIO.HIGH and firstFloorData['carCount'] < 16:
                         flipFullFloorState()
                     break
-        time.sleep(0.05) # TODO
 
 
 def handleSocketCommunication():
@@ -96,43 +92,36 @@ def handleSocketCommunication():
             socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
             socketInstance.connect((HOST, PORT))
-            # print('tentou conect')
             while True:
                 try:
                     time.sleep(0.5)
-                    print('sent data', firstFloorData)
+                    print('sentData', firstFloorData)
+
                     socketInstance.send(str.encode(json.dumps(firstFloorData))) # TODO
 
                     ready, _, _ = select.select([socketInstance], [], [], 0.1)
                     if not ready:
-                        print('not ready')
                         pass
                     else:
-                        print('ready')
                         data = socketInstance.recv(1024)
        
                         if not data:
                             break
                         else:
                             userManualCommands = json.loads(data.decode())
-                            print('data', userManualCommands)
-                            print(userManualCommands['command'], 'first_floor_full')
                             
                             if userManualCommands['command'] == 'first_floor_full':
                                 flipFullFloorState()
 
-                            print("Received message from server:",data)
-
-                except Exception as e: 
-                    print('execpt handleSocketCommunication inside', e)
+                except Exception as e:
+                    print('exception', e)
                     break
         except Exception as e: 
-            print('execpt handleSocketCommunication outside', e)
-
+            print('exception', e)
 
 def flipFullFloorState():
     firstFloorData['isFloorFull'] = not firstFloorData['isFloorFull']
-    print('entrou aqui pra setar')
+    print('GPIO 27 SET TO', firstFloorData['isFloorFull'])
     GPIO.output(27, firstFloorData['isFloorFull'])
 
 threading.Thread(target=readParkingSpaces).start()

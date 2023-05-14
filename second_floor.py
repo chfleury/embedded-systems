@@ -61,7 +61,6 @@ def handleSecondFloorEntrance():
                 sensorOneTime = time.time()
                 while bool(GPIO.input(16)):
                     pass
-                # time.sleep(0.3)
 
             if SENSOR_DE_PASSAGEM_2 and sensorTwoTime is None:
                 sensorTwoTime = time.time()
@@ -75,7 +74,7 @@ def handleSecondFloorEntrance():
                     print('entrou para o segundo andar!1')
 
                     secondFloorData['carCount'] = secondFloorData['carCount'] + 1
-                    if secondFloorData['isFloorFull'] == GPIO.LOW and secondFloorData['carCount'] == 8:
+                    if secondFloorData['isFloorFull'] == GPIO.LOW and secondFloorData['carCount'] >= 8:
                         flipFullFloorState()
 
                     print('entrou para o segundo andar!')
@@ -95,8 +94,7 @@ def handleSecondFloorEntrance():
                 continue
             time.sleep(0.25)
         except Exception as e:
-            print('handleSecondFloorEntrance exception', e)
-
+            pass
 
 def handleSocketCommunication():
     while True:
@@ -115,41 +113,32 @@ def handleSocketCommunication():
 
                     ready, _, _ = select.select([socketInstance], [], [], 0.1)
                     if not ready:
-                        print('not ready')
                         pass
                     else:
-                        print('ready')
-
                         data = socketInstance.recv(1024)
        
-                        print('chegou aqui')
                         if not data:
-                            print('not data')
                             break
                         else:
                             userManualCommands = json.loads(data.decode())
-                            print('data', userManualCommands)
                             print(userManualCommands['command'], 'second_floor_full')
 
                             if userManualCommands['command'] == 'second_floor_full':
                                 flipFullFloorState()
 
-                            print("Received message from server:",data)
-
                 except Exception as e: 
-                    print('execpt handleSocketCommunication inside', e)
+                    print('exception', e)
                     break
         except Exception as e: 
-            print('execpt handleSocketCommunication outside', e)
+            print('exception', e)
 
 
 
  
 def flipFullFloorState():
     secondFloorData['isFloorFull'] = not secondFloorData['isFloorFull']
-    print('entrou aqui pra setar')
+    print('GPIO 8 SET TO', secondFloorData['isFloorFull'])
     GPIO.output(8, secondFloorData['isFloorFull'])
-    pass
 
 threading.Thread(target=handleSocketCommunication).start()
 threading.Thread(target=readParkingSpaces).start()
