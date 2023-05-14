@@ -3,6 +3,7 @@ import json
 import threading
 import os
 import time
+import select
 
 HOST = "localhost"
 PORT = 10585
@@ -23,56 +24,51 @@ userManualCommands = {
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 socketInstance.bind((HOST, PORT))
 socketInstance.listen()
+socketsList = [socketInstance] 
 
 
 
 def handleSocketCommunication():
     while True:
-        # print("Waiting for client...")
+        read_sockets, _, _ = select.select(socketsList, [], [])
 
-
-        clients = [] # TODO FIX TCP
-        
-        while len(clients) < 2:
-            # print('len', len(clients))
-            connection, _ = socketInstance.accept()
-            clients.append(connection)
-
-        # print('passou aqui')
-        while True:
-            try:
-                for client in clients:
+        for sock in read_sockets:
+            if sock == socketInstance:
+                conn, addr = socketInstance.accept()
+                socketsList.append(conn)
+                print(f"New connection from {addr}")
+            # incoming data from an existing connection
+            else:
+                try:
                     time.sleep(0.1) # TODO
-                    # print('chegou 0')
 
-                    data = client.recv(1024).decode()
-                    # print('chegou 10')
+                    if sock != socketInstance and userManualCommands["command"] is not None:
+                        sock.send(str.encode(json.dumps(userManualCommands)))
 
-                    # print('data decoe', data)
-                    dataDictionary = json.loads(data)
-                    # print('chegou 20')
+                    data = sock.recv(1024)
+                    if data:
+                        dataDictionary = json.loads(data.decode())
 
-                    # print(dataDictionary)
+                        if  dataDictionary["metadata"] == "firstFloor":
 
-
-                    if  dataDictionary["metadata"] == "firstFloor":
-
-                        parkingSpaceData['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
-                        parkingSpaceData["totalCarCount"] = dataDictionary['carCount']
-                    if dataDictionary["metadata"] == "secondFloor":
-                        # print('aAAAAAAAAAAAAA')
-                        parkingSpaceData['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
-                        parkingSpaceData['secondFloorCarCount'] = dataDictionary['carCount']
-
-                    # print('parkinAqui', parkingSpaceData)
-
-                    if userManualCommands["command"] is not None:
-                        client.send(str.encode(json.dumps(userManualCommands)))
-                userManualCommands["command"] = None
-
-            except Exception as e: 
-                print(e)
-                break
+                            parkingSpaceData['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
+                            parkingSpaceData["totalCarCount"] = dataDictionary['carCount']
+                        if dataDictionary["metadata"] == "secondFloor":
+                            parkingSpaceData['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
+                            parkingSpaceData['secondFloorCarCount'] = dataDictionary['carCount']
+                        print(f"Received data from {sock.getpeername()}: {data.decode()}")
+                    else:
+                        # connection closed
+                        sock.close()
+                        if sock in socketsList:
+                            socketsList.remove(sock)
+                except:
+                    # connection closed or error
+                    sock.close()
+                    if sock in socketsList:
+                        socketsList.remove(sock)
+        userManualCommands["command"] = None
+        
 
 
 
@@ -110,9 +106,11 @@ def userInterface():
 
 
 def calculateRevenue():
-    parkingSpaceData['totalRevenue'] = parkingSpaceData['totalRevenue'] + (int(parkingSpaceData["totalCarCount"]) * 0.15)
-    time.sleep(60)
+    while True:
+        parkingSpaceData['totalRevenue'] = parkingSpaceData['totalRevenue'] + (int(parkingSpaceData["totalCarCount"]) * 0.15)
+        time.sleep(60)
 
 threading.Thread(target=handleSocketCommunication).start()
 threading.Thread(target=userInterface).start()
 threading.Thread(target=userInput).start()
+threading.Thread(target=calculateRevenue).start()

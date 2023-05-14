@@ -108,7 +108,7 @@ def handleSocketCommunication():
             socketInstance.connect((HOST, PORT))
             while True:
                 try:
-                    time.sleep(1) # TODO
+                    time.sleep(0.5) # TODO
 
                     print('sentData', secondFloorData)
                     socketInstance.send(str.encode(json.dumps(secondFloorData))) # TODO

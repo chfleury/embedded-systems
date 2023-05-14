@@ -99,7 +99,7 @@ def handleSocketCommunication():
             # print('tentou conect')
             while True:
                 try:
-                    time.sleep(1)
+                    time.sleep(0.5)
                     print('sent data', firstFloorData)
                     socketInstance.send(str.encode(json.dumps(firstFloorData))) # TODO
 
