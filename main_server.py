@@ -8,9 +8,11 @@ HOST = "localhost"
 PORT = 10585
 
 
-parkingSpacesMap = {
+parkingSpaceData = {
     "firstFloorMap": [False] * 8,
-    "secondFloorMap": [False] * 8
+    "secondFloorMap": [False] * 8,
+    "totalCarCount": 0,
+    "secondFloorCarCount": 0 
 }
 
 userManualCommands = {
@@ -53,13 +55,14 @@ def handleSocketCommunication():
 
                     if  dataDictionary["metadata"] == "firstFloor":
 
-                        parkingSpacesMap['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
-                    
+                        parkingSpaceData['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
+                        parkingSpaceData["totalCarCount"] = dataDictionary['carCount']
                     if dataDictionary["metadata"] == "secondFloor":
                         print('aAAAAAAAAAAAAA')
-                        parkingSpacesMap['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
+                        parkingSpaceData['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
+                        parkingSpaceData['secondFloorCarCount'] = dataDictionary['carCount']
 
-                    print('parkinAqui', parkingSpacesMap)
+                    print('parkinAqui', parkingSpaceData)
 
                     if userManualCommands["command"] is not None:
                         client.send(str.encode(json.dumps(userManualCommands)))
@@ -86,15 +89,20 @@ def userInput():
 
 def userInterface():
     while True:
-        print("Total de carros TODO")
-        print("Primeiro Andar:", parkingSpacesMap['firstFloorMap'])
-        print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
-        print(parkingSpacesMap)
+
+        os.system("clear") # TODO
+
+        print("Total de carros no estacionamento:", parkingSpaceData['totalCarCount'])
+        print("Número de carros no Primeiro Andar:", int(parkingSpaceData["totalCarCount"]) - int(parkingSpaceData["secondFloorCarCount"]))
+        print("Número de carros no Segundo Andar:", parkingSpaceData["secondFloorCarCount"])
+        print("Vagas disponíveis no Primeiro Andar:", parkingSpaceData['firstFloorMap'])
+        print("Vagas disponíveis no Segundo Andar:", parkingSpaceData['secondFloorMap'])
+        print(parkingSpaceData)
         print("Comandos disponiveis ('1' ou '2')")
         print("'1' - Liga/Desliga sinal de lotado do estacionamento.")
         print("'2' - Liga/Desliga sinal de lotado do segundo andar.")
+
         time.sleep(1)  # TODO
-        os.system("clear")
         pass
 
 

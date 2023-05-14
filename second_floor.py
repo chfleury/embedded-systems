@@ -12,13 +12,12 @@ PORT = 10585
 
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
-parkingSpacesMap = {
+secondFloorData = {
     "parkingSpacesMap": [False] * 8,
+    "carCount": 0,
+    "isFloorFull": GPIO.LOW,
     "metadata": "secondFloor"
 }
-
-isFloorFull = GPIO.LOW
-totalCars = 0
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -43,7 +42,7 @@ def readParkingSpaces():
 
             isParkingSpaceBusy = bool(GPIO.input(20))
 
-            parkingSpacesMap['parkingSpacesMap'][i] = isParkingSpaceBusy
+            secondFloorData['parkingSpacesMap'][i] = isParkingSpaceBusy
  
 
 def handleSecondFloorEntrance():
@@ -72,15 +71,15 @@ def handleSecondFloorEntrance():
             deltaTime = sensorTwoTime - sensorOneTime
 
             if deltaTime > 0:
-                totalCars += 1
-                if isFloorFull == GPIO.LOW and totalCars == 8:
+                secondFloorData['carCount'] = secondFloorData['carCount'] + 1
+                if secondFloorData['isFloorFull'] == GPIO.LOW and secondFloorData['carCount'] == 8:
                     flipFullFloorState()
 
                 print('entrou para o segundo andar!')
                 print(time.time())
             else: 
-                totalCars -= 1
-                if isFloorFull == GPIO.HIGH:
+                secondFloorData['carCount'] = secondFloorData['carCount'] - 1
+                if secondFloorData['isFloorFull'] == GPIO.HIGH:
                     flipFullFloorState()
                 print('saiu para o primeiro andar2!')
                 print(time.time())
@@ -96,16 +95,17 @@ def handleSecondFloorEntrance():
 def handleSocketCommunication():
     while True:
         try:
+            time.sleep(1)
+
             socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
             socketInstance.connect((HOST, PORT))
-            # print('tentou conect')
             while True:
                 try:
                     time.sleep(1) # TODO
 
-                    print('sentData', parkingSpacesMap)
-                    socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
+                    print('sentData', secondFloorData)
+                    socketInstance.send(str.encode(json.dumps(secondFloorData))) # TODO
 
                     ready, _, _ = select.select([socketInstance], [], [], 0.1)
                     if not ready:
@@ -140,9 +140,9 @@ def handleSocketCommunication():
 
  
 def flipFullFloorState():
-    isFloorFull = not isFloorFull
+    secondFloorData['isFloorFull'] = not secondFloorData['isFloorFull']
     print('entrou aqui pra setar')
-    GPIO.output(8, isFloorFull)
+    GPIO.output(8, secondFloorData['isFloorFull'])
     GPIO.output(8, 1)
     pass
 

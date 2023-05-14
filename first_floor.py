@@ -10,13 +10,12 @@ PORT = 10585
 
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
-parkingSpacesMap = {
+firstFloorData = {
     "parkingSpacesMap": [False] * 8,
+    "carCount": 0,
+    "isFloorFull": GPIO.LOW,
     "metadata": "firstFloor"
 }
-
-isFloorFull = GPIO.LOW
-totalCars = 0
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -44,7 +43,7 @@ def readParkingSpaces():
 
             isParkingSpaceBusy = bool(GPIO.input(18))
 
-            parkingSpacesMap['parkingSpacesMap'][i] = isParkingSpaceBusy
+            firstFloorData['parkingSpacesMap'][i] = isParkingSpaceBusy
 
         # print("First Floor Parking Spaces: ", parkingSpacesMap['parkingSpacesMap'])
 
@@ -57,14 +56,16 @@ def handleEntranceParkingBarrier():
         if SENSOR_ABERTURA_CANCELA_ENTRADA:
             GPIO.output(10, 1)
 
-            totalCars += 1
-            if isFloorFull == GPIO.LOW and totalCars == 16:
-                flipFullFloorState()
+
 
             while True:
                 SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(24)
                 if SENSOR_FECHAMENTO_CANCELA_ENTRADA:
                     GPIO.output(10, 0)
+
+                    firstFloorData['carCount'] = firstFloorData['carCount'] + 1
+                    if firstFloorData['isFloorFull'] == GPIO.LOW and firstFloorData['carCount'] == 16:
+                        flipFullFloorState()
                     break
 
 
@@ -74,15 +75,16 @@ def handleExitParkingBarrier():
 
         if SENSOR_ABERTURA_CANCELA_SAIDA:
             GPIO.output(17, 1)
-            totalCars -=1
-
-            if isFloorFull == GPIO.HIGH and totalCars < 16:
-                flipFullFloorState()
 
             while True:
                 SENSOR_FECHAMENTO_CANCELA_SAIDA = GPIO.input(12)
                 if SENSOR_FECHAMENTO_CANCELA_SAIDA:
                     GPIO.output(17, 0)
+
+                    firstFloorData['carCount'] = firstFloorData['carCount'] - 1
+
+                    if firstFloorData['isFloorFull'] == GPIO.HIGH and firstFloorData['carCount'] < 16:
+                        flipFullFloorState()
                     break
         time.sleep(0.05) # TODO
 
@@ -90,6 +92,7 @@ def handleExitParkingBarrier():
 def handleSocketCommunication():
     while True:
         try:
+            time.sleep(1)
             socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
             socketInstance.connect((HOST, PORT))
@@ -97,8 +100,8 @@ def handleSocketCommunication():
             while True:
                 try:
                     time.sleep(1)
-                    print('sent data', parkingSpacesMap)
-                    socketInstance.send(str.encode(json.dumps(parkingSpacesMap))) # TODO
+                    print('sent data', firstFloorData)
+                    socketInstance.send(str.encode(json.dumps(firstFloorData))) # TODO
 
                     ready, _, _ = select.select([socketInstance], [], [], 0.1)
                     if not ready:
@@ -128,9 +131,9 @@ def handleSocketCommunication():
 
 
 def flipFullFloorState():
-    isFloorFull = not isFloorFull
+    firstFloorData['isFloorFull'] = not firstFloorData['isFloorFull']
     print('entrou aqui pra setar')
-    GPIO.output(27, isFloorFull)
+    GPIO.output(27, firstFloorData['isFloorFull'])
 
 threading.Thread(target=readParkingSpaces).start()
 threading.Thread(target=handleEntranceParkingBarrier).start()
