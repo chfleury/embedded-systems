@@ -42,8 +42,15 @@ def handleSocketCommunication():
                 try:
                     time.sleep(0.1) # TODO
 
-                    if sock != socketInstance and userManualCommands["command"] is not None:
-                        sock.send(str.encode(json.dumps(userManualCommands)))
+                    print('comando', userManualCommands["command"])
+                    print(len(read_sockets), len(socketsList))
+
+                    for connection in socketsList:
+                        if connection != socketInstance and userManualCommands["command"] is not None:
+                            print('entrou no send')
+                            connection.send(str.encode(json.dumps(userManualCommands)))
+                    
+                    userManualCommands["command"] = None
 
                     data = sock.recv(1024)
                     if data:
@@ -56,7 +63,7 @@ def handleSocketCommunication():
                         if dataDictionary["metadata"] == "secondFloor":
                             parkingSpaceData['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
                             parkingSpaceData['secondFloorCarCount'] = dataDictionary['carCount']
-                        print(f"Received data from {sock.getpeername()}: {data.decode()}")
+                        # print(f"Received data from {sock.getpeername()}: {data.decode()}")
                     else:
                         # connection closed
                         sock.close()
@@ -67,7 +74,6 @@ def handleSocketCommunication():
                     sock.close()
                     if sock in socketsList:
                         socketsList.remove(sock)
-        userManualCommands["command"] = None
         
 
 
@@ -111,6 +117,6 @@ def calculateRevenue():
         time.sleep(60)
 
 threading.Thread(target=handleSocketCommunication).start()
-threading.Thread(target=userInterface).start()
+# threading.Thread(target=userInterface).start()
 threading.Thread(target=userInput).start()
 threading.Thread(target=calculateRevenue).start()
