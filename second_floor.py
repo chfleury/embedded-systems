@@ -19,7 +19,6 @@ secondFloorData = {
     "metadata": "secondFloor"
 }
 
-
 ENDERECO_01_GPIO = 13
 ENDERECO_02_GPIO = 6
 ENDERECO_03_GPIO = 5
@@ -80,22 +79,13 @@ def handleSecondFloorEntrance():
                 deltaTime = sensorTwoTime - sensorOneTime
 
                 if deltaTime > 0:
-                    print('entrou para o segundo andar!1')
-
                     secondFloorData['carCount'] = secondFloorData['carCount'] + 1
                     if secondFloorData['isFloorFull'] == GPIO.LOW and secondFloorData['carCount'] >= 8:
                         flipFullFloorState()
-
-                    print('entrou para o segundo andar!')
-                    print(time.time())
                 else: 
-                    print('saiu para o primeiro andar!')
-
                     secondFloorData['carCount'] = secondFloorData['carCount'] - 1
                     if secondFloorData['isFloorFull'] == GPIO.HIGH:
                         flipFullFloorState()
-                    print('saiu para o primeiro andar2!')
-                    print(time.time())
                 sensorOneTime = None
                 sensorTwoTime = None
                 time.sleep(0.4)
