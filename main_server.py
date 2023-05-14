@@ -117,6 +117,6 @@ def calculateRevenue():
         time.sleep(60)
 
 threading.Thread(target=handleSocketCommunication).start()
-# threading.Thread(target=userInterface).start()
+threading.Thread(target=userInterface).start()
 threading.Thread(target=userInput).start()
 threading.Thread(target=calculateRevenue).start()
