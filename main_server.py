@@ -12,6 +12,7 @@ parkingSpaceData = {
     "firstFloorMap": [False] * 8,
     "secondFloorMap": [False] * 8,
     "totalCarCount": 0,
+    "totalRevenue": 0.0,
     "secondFloorCarCount": 0 
 }
 
@@ -30,7 +31,8 @@ def handleSocketCommunication():
         print("Waiting for client...")
 
 
-        clients = []
+        clients = [] # TODO FIX TCP
+        
         while len(clients) < 2:
             print('len', len(clients))
             connection, _ = socketInstance.accept()
@@ -41,16 +43,16 @@ def handleSocketCommunication():
             try:
                 for client in clients:
                     time.sleep(0.1) # TODO
-                    print('chegou 0')
+                    # print('chegou 0')
 
                     data = client.recv(1024).decode()
-                    print('chegou 10')
+                    # print('chegou 10')
 
-                    print('data decoe', data)
+                    # print('data decoe', data)
                     dataDictionary = json.loads(data)
-                    print('chegou 20')
+                    # print('chegou 20')
 
-                    print(dataDictionary)
+                    # print(dataDictionary)
 
 
                     if  dataDictionary["metadata"] == "firstFloor":
@@ -58,7 +60,7 @@ def handleSocketCommunication():
                         parkingSpaceData['firstFloorMap'] = dataDictionary["parkingSpacesMap"]
                         parkingSpaceData["totalCarCount"] = dataDictionary['carCount']
                     if dataDictionary["metadata"] == "secondFloor":
-                        print('aAAAAAAAAAAAAA')
+                        # print('aAAAAAAAAAAAAA')
                         parkingSpaceData['secondFloorMap'] = dataDictionary["parkingSpacesMap"]
                         parkingSpaceData['secondFloorCarCount'] = dataDictionary['carCount']
 
@@ -77,11 +79,11 @@ def handleSocketCommunication():
 def userInput():
     try:
         while True:
-            print('asdsadsassa')
+            # print('asdsadsassa')
             x = int(input())
 
             if x == 1:
-                print('entrou aqui')
+                # print('entrou aqui')
                 userManualCommands['command'] = 'first_floor_full'
             elif x == 2:
                 userManualCommands['command'] = 'second_floor_full'
@@ -97,6 +99,7 @@ def userInterface():
         print("Número de carros no Segundo Andar:", parkingSpaceData["secondFloorCarCount"])
         print("Vagas disponíveis no Primeiro Andar:", parkingSpaceData['firstFloorMap'])
         print("Vagas disponíveis no Segundo Andar:", parkingSpaceData['secondFloorMap'])
+        print("Total de dinheiro gerado pelo estacionamento: R$" + str(parkingSpaceData['totalRevenue']))
         print(parkingSpaceData)
         print("Comandos disponiveis ('1' ou '2')")
         print("'1' - Liga/Desliga sinal de lotado do estacionamento.")
@@ -106,7 +109,9 @@ def userInterface():
         pass
 
 
-
+def calculateRevenue():
+    parkingSpaceData['totalRevenue'] = parkingSpaceData['totalRevenue'] + (int(parkingSpaceData["totalCarCount"]) * 0.15)
+    time.sleep(60)
 
 threading.Thread(target=handleSocketCommunication).start()
 threading.Thread(target=userInterface).start()
