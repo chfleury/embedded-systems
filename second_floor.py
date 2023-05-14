@@ -9,6 +9,7 @@ HOST = "localhost"
 PORT = 10585
 
 
+
 socketInstance = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP IPV4
 
 parkingSpacesMap = {
@@ -16,6 +17,8 @@ parkingSpacesMap = {
     "metadata": "secondFloor"
 }
 
+isFloorFull = GPIO.LOW
+totalCars = 0
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
@@ -69,9 +72,16 @@ def handleSecondFloorEntrance():
             deltaTime = sensorTwoTime - sensorOneTime
 
             if deltaTime > 0:
-                 print('entrou para o segundo andar!')
-                 print(time.time())
+                totalCars += 1
+                if isFloorFull == GPIO.LOW and totalCars == 8:
+                    flipFullFloorState()
+
+                print('entrou para o segundo andar!')
+                print(time.time())
             else: 
+                totalCars -= 1
+                if isFloorFull == GPIO.HIGH:
+                    flipFullFloorState()
                 print('saiu para o primeiro andar2!')
                 print(time.time())
             sensorOneTime = None
@@ -116,7 +126,7 @@ def handleSocketCommunication():
                             print(userManualCommands['command'], 'second_floor_full')
 
                             if userManualCommands['command'] == 'second_floor_full':
-                                setFullFloorLedOn()
+                                flipFullFloorState()
 
                             print("Received message from server:",data)
 
@@ -128,8 +138,11 @@ def handleSocketCommunication():
 
 
 
-def setFullFloorLedOn():
-    print('led on')
+ 
+def flipFullFloorState():
+    isFloorFull = not isFloorFull
+    print('entrou aqui pra setar')
+    GPIO.output(8, isFloorFull)
     GPIO.output(8, 1)
     pass
 

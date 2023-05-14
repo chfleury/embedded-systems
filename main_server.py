@@ -91,8 +91,8 @@ def userInterface():
         print("Segundo Andar:", parkingSpacesMap['secondFloorMap'])
         print(parkingSpacesMap)
         print("Comandos disponiveis ('1' ou '2')")
-        print("'1' - Liga sinal de lotado do estacionamento.")
-        print("'2' - Liga sinal de lotado do segundo andar.")
+        print("'1' - Liga/Desliga sinal de lotado do estacionamento.")
+        print("'2' - Liga/Desliga sinal de lotado do segundo andar.")
         time.sleep(1)  # TODO
         os.system("clear")
         pass

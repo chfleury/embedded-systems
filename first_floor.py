@@ -15,6 +15,9 @@ parkingSpacesMap = {
     "metadata": "firstFloor"
 }
 
+isFloorFull = GPIO.LOW
+totalCars = 0
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(22, GPIO.OUT)  # ENDERECO_01
@@ -54,6 +57,10 @@ def handleEntranceParkingBarrier():
         if SENSOR_ABERTURA_CANCELA_ENTRADA:
             GPIO.output(10, 1)
 
+            totalCars += 1
+            if isFloorFull == GPIO.LOW and totalCars == 16:
+                flipFullFloorState()
+
             while True:
                 SENSOR_FECHAMENTO_CANCELA_ENTRADA = GPIO.input(24)
                 if SENSOR_FECHAMENTO_CANCELA_ENTRADA:
@@ -67,6 +74,10 @@ def handleExitParkingBarrier():
 
         if SENSOR_ABERTURA_CANCELA_SAIDA:
             GPIO.output(17, 1)
+            totalCars -=1
+
+            if isFloorFull == GPIO.HIGH and totalCars < 16:
+                flipFullFloorState()
 
             while True:
                 SENSOR_FECHAMENTO_CANCELA_SAIDA = GPIO.input(12)
@@ -105,7 +116,7 @@ def handleSocketCommunication():
                             print(userManualCommands['command'], 'first_floor_full')
                             
                             if userManualCommands['command'] == 'first_floor_full':
-                                setFullFloorLedOn()
+                                flipFullFloorState()
 
                             print("Received message from server:",data)
 
@@ -116,9 +127,10 @@ def handleSocketCommunication():
             print('execpt handleSocketCommunication outside', e)
 
 
-def setFullFloorLedOn():
+def flipFullFloorState():
+    isFloorFull = not isFloorFull
     print('entrou aqui pra setar')
-    GPIO.output(27, 1)
+    GPIO.output(27, isFloorFull)
 
 threading.Thread(target=readParkingSpaces).start()
 threading.Thread(target=handleEntranceParkingBarrier).start()
