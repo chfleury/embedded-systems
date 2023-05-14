@@ -149,7 +149,6 @@ def flipFullFloorState():
     secondFloorData['isFloorFull'] = not secondFloorData['isFloorFull']
     print('entrou aqui pra setar')
     GPIO.output(8, secondFloorData['isFloorFull'])
-    GPIO.output(8, 1)
     pass
 
 threading.Thread(target=handleSocketCommunication).start()

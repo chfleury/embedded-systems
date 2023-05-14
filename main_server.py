@@ -77,8 +77,8 @@ def handleSocketCommunication():
 
 
 def userInput():
-    try:
-        while True:
+    while True:
+        try:
             # print('asdsadsassa')
             x = int(input())
 
@@ -87,7 +87,7 @@ def userInput():
                 userManualCommands['command'] = 'first_floor_full'
             elif x == 2:
                 userManualCommands['command'] = 'second_floor_full'
-    except: pass
+        except: pass
 
 def userInterface():
     while True:
