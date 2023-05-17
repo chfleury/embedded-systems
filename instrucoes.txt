@@ -1,3 +1,0 @@
-requisitos:
-
-python3 e RPI.GPIO
