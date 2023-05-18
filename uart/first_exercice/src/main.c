@@ -119,21 +119,21 @@ int main(int argc, const char *argv[])
         else
         {
 
-            if (command >= 0xA1 && command <= 0xB1)
+            if (command == 0xA1 || command == 0xB1)
             {
                 int data;
                 memcpy(&data, rx_buffer, sizeof(data));
 
                 printf("%i Bytes lidos : %d\n", rx_length, data);
             }
-            else if (command >= 0xA2 && command <= 0xB2)
+            else if (command == 0xA2 || command == 0xB3)
             {
                 float data;
                 memcpy(&data, rx_buffer, sizeof(data));
 
                 printf("%i Bytes lidos : %f\n", rx_length, data);
             }
-            else if (command >= 0xA3 && command <= 0xB3)
+            else if (command == 0xA3 || command == 0xB3)
             {
 
                 int dataSize;
