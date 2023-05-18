@@ -78,7 +78,10 @@ int main(int argc, const char *argv[])
             p_tx_buffer += size;
         }
 
-        // for(int i =0;i<TAMANHO_MATRICULA; i++){}
+        // for (int i = 0; i < TAMANHO_MATRICULA; i++)
+        // {
+        //     memcpy(p_tx_buffer++, &matricula[i], 1);
+        // }
 
         memcpy(p_tx_buffer++, &matricula[0], 1);
         memcpy(p_tx_buffer++, &matricula[1], 1);
