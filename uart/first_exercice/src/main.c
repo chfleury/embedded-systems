@@ -42,79 +42,52 @@ int main(int argc, const char *argv[])
 
         memcpy(p_tx_buffer++, &command, 1);
 
-        if (command >= 0xB1 && command <= 0xB3)
+        if (command == 0xB1)
         {
+            int data;
+            printf("Digite o inteiro a ser enviado.\n");
 
-            switch (command)
-            {
-            case 0xB1:
-            {
-                int data;
-                printf("Digite o inteiro a ser enviado.\n");
+            scanf("%d", &data);
 
-                scanf("%d", &data);
+            memcpy(p_tx_buffer, &data, sizeof(data));
+            p_tx_buffer += sizeof(data);
+        }
+        else if (command == 0xB2)
+        {
+            float data;
+            printf("Digite o float a ser enviado.\n");
 
-                memcpy(p_tx_buffer, &data, 1);
-                p_tx_buffer += sizeof(data);
+            scanf("%f", &data);
 
-                break;
-            }
+            memcpy(p_tx_buffer, &data, sizeof(data));
+            p_tx_buffer += sizeof(data);
+        }
+        else if (command == 0xB3)
+        {
+            printf("Digite o tamanho da string a ser enviada.\n");
+            int size;
+            scanf("%d", &size);
 
-            case 0xB2:
-            {
-                float data;
-                printf("Digite o float a ser enviado.\n");
+            printf("Digite a string a ser enviada.\n");
+            char data[256];
 
-                scanf("%f", &data);
+            scanf("%s", data);
 
-                memcpy(p_tx_buffer, &data, 1);
-                p_tx_buffer += sizeof(data);
-
-                break;
-            }
-            case 0xB3:
-            {
-                printf("Digite o tamanho da string a ser enviada.\n");
-                int size;
-                scanf("%d", &size);
-
-                printf("Digite a string a ser enviada.\n");
-                char data[size];
-                scanf("%s", data);
-
-                memcpy(p_tx_buffer, &size, 1);
-                p_tx_buffer += sizeof(size);
-
-                for (int i = 0; i < size; i++)
-                {
-
-                    *p_tx_buffer = data[i];
-                    p_tx_buffer++;
-                }
-
-                break;
-            }
-
-            default:
-                printf("Comando inválido.\n");
-                continue;
-            }
+            memcpy(p_tx_buffer++, &size, 1);
+            memcpy(p_tx_buffer, &data[0], size);
+            p_tx_buffer += size;
         }
 
-        for (int i = 0; i < TAMANHO_MATRICULA; i++)
-        {
+        // for(int i =0;i<TAMANHO_MATRICULA; i++){}
 
-            memcpy(p_tx_buffer++, &matricula[i], 1);
-        }
+        memcpy(p_tx_buffer++, &matricula[0], 1);
+        memcpy(p_tx_buffer++, &matricula[1], 1);
+        memcpy(p_tx_buffer++, &matricula[2], 1);
+        memcpy(p_tx_buffer++, &matricula[3], 1);
 
         printf("Buffers de memória criados!\n");
 
         printf("Escrevendo caracteres na UART ...");
-
-        printf("%d\n", tx_buffer[0]);
-        int x;
-        memcpy(&x, &tx_buffer[1], 4);
-        printf("o valode x é %d", x);
 
         int count = write(uart0_filestream, &tx_buffer[0], (p_tx_buffer - &tx_buffer[0]));
         if (count < 0)
